@@ -8,6 +8,9 @@ FEEDS contain a list of rss dictionary
 '''
 
 import os
+from dotenv import load_dotenv
+load_dotenv()
+
 FEEDS = [
             {
                 'name': 'Global News Canada',
@@ -30,3 +33,7 @@ FEEDS = [
                 'channel': 'world-news',
             }
         ]
+
+if __name__ =="__main__":
+    for item in FEEDS:
+        print(item)

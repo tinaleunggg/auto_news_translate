@@ -1,6 +1,5 @@
 import pytest
 from config.rss_settings import Rss, RssLibrary
-from config.rss_feeds import FEEDS
 import os
 from dotenv import load_dotenv
 
@@ -26,5 +25,6 @@ def test_rss():
         rss = Rss("cbc", "http://testing", "sport")
 
 def test_rss_library():
-    rss_lib = RssLibrary()
-    assert = 
+    rss_library = RssLibrary()
+    for item in rss_library.library:
+        assert isinstance(item, Rss)

@@ -17,7 +17,7 @@ Classes:
 
 import os
 from dotenv import load_dotenv
-from rss_feeds import FEEDS
+from config.rss_feeds import FEEDS
 
 load_dotenv()
 
@@ -38,7 +38,7 @@ class Rss:
         elif  channel == self.WORLD:
             self.webhook_url = os.getenv('WORLD_NEWS_WEBHOOK_URL')
     def __str__(self):
-        return f"Name: {self.name}, Channel: {self.channel}"
+        return f"Name: {self.name}, url: {self.url}, Channel: {self.channel}"
 
 class RssLibrary:
     
@@ -50,7 +50,6 @@ class RssLibrary:
     def add_rss(self, name, url, channel):
         rss = Rss(name, url, channel)
         self.library.append(rss)
-        print(rss.name)
         
 if __name__ =="__main__":
     lib = RssLibrary()

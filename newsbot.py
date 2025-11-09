@@ -1,13 +1,13 @@
 '''
 TODO: load config
 TODO: schedule checking for new items every 15 min
-TODO: fetch rss content
-TODO: check release time of the new items, only process the news articles released within 15 mins
-    -> a list of rss news item
-    TODO: load news article link
-    TODO: crawl the news article
-    TODO: translate by AI
-    TODO: send to discord
+TODO: fetch rss content from each links in the library
+    TODO: for each item in the rss list
+        TODO: check release time of the new items, only process the news articles released within 15 mins
+        TODO: format rss news item (title, link, published date, channel, webhook url)
+        TODO: crawl the news article
+        TODO: translate by AI
+        TODO: send to discord
 
 '''
 import os
@@ -17,21 +17,15 @@ load_dotenv()
 
 import traceback
 import asyncio
-# import json
-# import signal
 import sys
-# from datetime import datetime
-# from pathlib import Path
+from datetime import datetime, timezone, timedelta
 # from typing import Dict, List, Optional, Set
-# import xml.etree.ElementTree as ET
 
 import aiohttp
 import feedparser
 from crawl4ai import AsyncWebCrawler
 from dotenv import load_dotenv
-# import pytz
 
-# Load environment variables
 load_dotenv()
 
 class NewsBot:
@@ -40,18 +34,34 @@ class NewsBot:
     TIMEZONE = 'America/Toronto'
     GEMINI_API_KEY = os.getenv('GEMINI_API_KEY')
     AI_MODEL = 'gemini-2.5-flash'
-    # LOG_LEVEL = os.getenv('LOG_LEVEL', 'info')
     
     def __init__(self):
         self.rss_library = RssLibrary()
         self.session = None
         self.is_running = False
+        self.crawler = Crawler()
     
     async def start(self):
         self.session = aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=self.REQUEST_TIMEOUT)
         )
+        self.crawler.start()
         self.is_running = True
-        await self.check_for_news()
+        
+        for rss_link in self.rss_library.library:
+            
+            channel = rss_link.channel
+            webhock_url = rss_link.webhook_url
+            
+            all_rss_feeds = await self.fetch_rss(rss_link)
+            filtered_rss_feeds = self.filter_updated_rss(all_rss_feeds)
+            for rss_feed in filtered_rss_feeds:
+                markdown_content = self.crawler.scrape(rss_feed.link)
+                
+            #     # crawl the news page
+            #     # use AI to translate the page
+            #     # send the result to discord
+
+
         
     async def stop(self):
         print('🛑 Stopping Multi-Feed News Bot...')
@@ -63,44 +73,62 @@ class NewsBot:
         if self.session:
             await self.session.close()
         
-    async def fetch_rss(self, rss):
-        ''' Fetch rss content from a rss object '''
-
+    async def fetch_rss(self, rss_link):
+        ''' 
+        This function fetch rss content from a rss object using feedparser, return a list of dictionary, each distionary represent a rss feed 
+        Args:
+            rss: Rss object
+        Return:
+            all_rss_feeds: a list of dictionary
+        '''
         headers = {
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
             'Accept': 'application/rss+xml, application/xml, text/xml, application/atom+xml, */*',
         }
         
-        print(f'📡 Fetching {rss.name}: {rss.url}')
-        async with self.session.get(rss.url, headers=headers) as response:
+        print(f'📡 Fetching {rss_link.name}: {rss_link.url}')
+        async with self.session.get(rss_link.url, headers=headers) as response:
             if response.status != 200:
                 raise Exception(f'HTTP {response.status}')
             content = await response.text()
         feed = feedparser.parse(content)
-        items = feed.entries
+        all_rss_feeds = feed.entries
 
-        print(f'📰 Found {len(items)} RSS items from {rss.name}')
+        print(f'📰 Found {len(all_rss_feeds)} RSS items from { rss_link.name}')
         
-        return items
+        return all_rss_feeds
 
                 
-    def filter_rss(self, ):
-        ''' Filter rss news item base on released time, only return the item that is release within CHECK_INTERVAL'''
-        
-    async def check_for_news(self):
-        ''' check for news in rss_library'''
-        for rss in self.rss_library.library:
-            items = await self.fetch_rss(rss)
+    def filter_updated_rss(self, all_rss_feeds):
+        ''' 
+        This function filter rss news item base on 'published' attribute of each item in the list, only return the item that is release within CHECK_INTERVAL
+        Args:
+            all_rss_feeds: a list of dictionary
+        return:
+            filtered_rss_feed: a list of dictionary
+        '''
+        now = datetime.now(timezone.utc)
+        delta = timedelta(minutes=15)
+        filtered_rss_feed = []
+        for feed in all_rss_feeds:
+            pub_date = feed.get('published', '')
+            if pub_date and ((now - datetime.strptime(pub_date, '%a, %d %b %Y %H:%M:%S %z')) < delta):
+                filtered_rss_feed.append(feed)
+        return filtered_rss_feed
 
-        
+                
+                
 
 class Crawler:
     ''' crawl individual news article page'''
     def __init__(self):
         self.crawler = AsyncWebCrawler(verbose=True)
+        
     async def start(self):
         await self.crawler.__aenter__()
-
+        
+    async def scrape(self, url):
+        pass
 
 async def main():
     bot = NewsBot()

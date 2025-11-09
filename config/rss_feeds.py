@@ -17,21 +17,21 @@ FEEDS = [
                 'url': os.getenv('GLOBAL_NEWS_URL'),
                 'channel': 'canada-news',
             },
-            {
-                'name': 'CBC Canada',
-                'url': os.getenv('CBC_NEWS_URL'),
-                'channel': 'canada-news',
-            },
-            {
-                'name': 'CBC British Columbia',
-                'url': os.getenv('CBC_BC_NEWS_URL'),
-                'channel': 'canada-news',
-            },
-            {
-                'name': 'Reuters',
-                'url': os.getenv('REUTERS_URL'),
-                'channel': 'world-news',
-            }
+            # {
+            #     'name': 'CBC Canada',
+            #     'url': os.getenv('CBC_NEWS_URL'),
+            #     'channel': 'canada-news',
+            # },
+            # {
+            #     'name': 'CBC British Columbia',
+            #     'url': os.getenv('CBC_BC_NEWS_URL'),
+            #     'channel': 'canada-news',
+            # },
+            # {
+            #     'name': 'Reuters',
+            #     'url': os.getenv('REUTERS_URL'),
+            #     'channel': 'world-news',
+            # }
         ]
 
 if __name__ =="__main__":

@@ -11,3 +11,6 @@ wheels/
 
 # env variable
 .env
+
+# result testing file
+*.txt

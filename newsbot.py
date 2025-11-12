@@ -1,11 +1,11 @@
 '''
-TODO: load config
+✅TODO: load config
 TODO: schedule checking for new items every 15 min
-TODO: fetch rss content from each links in the library
-    TODO: for each item in the rss list
-        TODO: check release time of the new items, only process the news articles released within 15 mins
-        TODO: format rss news item (title, link, published date, channel, webhook url)
-        TODO: crawl the news article
+✅TODO: fetch rss content from each links in the library
+    ✅TODO: for each item in the rss list
+        ✅TODO: check release time of the new items, only process the news articles released within 15 mins
+        ✅TODO: format rss news item (title, link, published date, channel, webhook url)
+        ✅TODO: crawl the news article
         TODO: translate by AI
         TODO: send to discord
 
@@ -68,7 +68,7 @@ class NewsBot:
         
     async def fetch_rss(self, rss_link):
         ''' 
-        This function fetch rss content from a rss object using feedparser, return a list of dictionary, each distionary represent a rss feed 
+        Fetch rss content from a rss object using feedparser, return a list of dictionary, each distionary represent a rss feed 
         Args:
             rss: Rss object
         Return:
@@ -94,7 +94,7 @@ class NewsBot:
                 
     def filter_updated_rss(self, all_rss_feeds):
         ''' 
-        This function filter rss news item base on 'published' attribute of each item in the list, only return the item that is release within CHECK_INTERVAL
+        Filter rss news item base on 'published' attribute of each item in the list, only return the item that is release within CHECK_INTERVAL
         Args:
             all_rss_feeds: a list of dictionary
         return:

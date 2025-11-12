@@ -1,5 +1,5 @@
 [project]
-name = "auto-news-translate-refactor"
+name = "auto-news-translate"
 version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
@@ -10,4 +10,5 @@ dependencies = [
     "dotenv>=0.9.9",
     "feedparser>=6.0.12",
     "pytest>=8.4.2",
+    "pytest-asyncio>=1.3.0",
 ]

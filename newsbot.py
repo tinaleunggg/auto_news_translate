@@ -13,19 +13,14 @@ TODO: fetch rss content from each links in the library
 import os
 from dotenv import load_dotenv
 from config.rss_settings import RssLibrary
-load_dotenv()
-
 import traceback
 import asyncio
 import sys
 from datetime import datetime, timezone, timedelta
 # from typing import Dict, List, Optional, Set
-
 import aiohttp
 import feedparser
-from crawl4ai import AsyncWebCrawler
-from dotenv import load_dotenv
-
+from crawler import Crawler
 load_dotenv()
 
 class NewsBot:
@@ -44,7 +39,7 @@ class NewsBot:
     async def start(self):
         self.session = aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=self.REQUEST_TIMEOUT)
         )
-        self.crawler.start()
+        # await self.crawler.start()
         self.is_running = True
         
         for rss_link in self.rss_library.library:
@@ -55,7 +50,8 @@ class NewsBot:
             all_rss_feeds = await self.fetch_rss(rss_link)
             filtered_rss_feeds = self.filter_updated_rss(all_rss_feeds)
             for rss_feed in filtered_rss_feeds:
-                markdown_content = self.crawler.scrape(rss_feed.link)
+                print(rss_feed.title)
+                # markdown_content = await self.crawler.scrape(rss_feed.link)
                 
             #     # crawl the news page
             #     # use AI to translate the page
@@ -117,19 +113,6 @@ class NewsBot:
         return filtered_rss_feed
 
                 
-                
-
-class Crawler:
-    ''' crawl individual news article page'''
-    def __init__(self):
-        self.crawler = AsyncWebCrawler(verbose=True)
-        
-    async def start(self):
-        await self.crawler.__aenter__()
-        
-    async def scrape(self, url):
-        pass
-
 async def main():
     bot = NewsBot()
     

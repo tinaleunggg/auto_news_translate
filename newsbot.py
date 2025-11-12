@@ -24,7 +24,7 @@ from crawler import Crawler
 load_dotenv()
 
 class NewsBot:
-    CHECK_INTERVAL = 900  # 15 minutes
+    CHECK_INTERVAL = 30800  # 3 hours
     REQUEST_TIMEOUT = 30
     TIMEZONE = 'America/Toronto'
     GEMINI_API_KEY = os.getenv('GEMINI_API_KEY')
@@ -39,7 +39,6 @@ class NewsBot:
     async def start(self):
         self.session = aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=self.REQUEST_TIMEOUT)
         )
-        # await self.crawler.start()
         self.is_running = True
         
         for rss_link in self.rss_library.library:
@@ -49,11 +48,12 @@ class NewsBot:
             
             all_rss_feeds = await self.fetch_rss(rss_link)
             filtered_rss_feeds = self.filter_updated_rss(all_rss_feeds)
-            for rss_feed in filtered_rss_feeds:
-                print(rss_feed.title)
-                # markdown_content = await self.crawler.scrape(rss_feed.link)
+            if len(filtered_rss_feeds) == 0:
+                return
+            
+            urls_to_scrape = [ rss_feed.link for rss_feed in filtered_rss_feeds]
+            markdown_contents = await self.crawler.scrape_many(urls_to_scrape)
                 
-            #     # crawl the news page
             #     # use AI to translate the page
             #     # send the result to discord
 
@@ -62,9 +62,6 @@ class NewsBot:
     async def stop(self):
         print('🛑 Stopping Multi-Feed News Bot...')
         self.is_running = False
-        
-        # if self.crawler:
-        #     await self.crawler.__aexit__(None, None, None)
         
         if self.session:
             await self.session.close()
@@ -90,7 +87,7 @@ class NewsBot:
         feed = feedparser.parse(content)
         all_rss_feeds = feed.entries
 
-        print(f'📰 Found {len(all_rss_feeds)} RSS items from { rss_link.name}')
+        print(f'📰 Fetched {len(all_rss_feeds)} RSS items from { rss_link.name}')
         
         return all_rss_feeds
 
@@ -104,12 +101,13 @@ class NewsBot:
             filtered_rss_feed: a list of dictionary
         '''
         now = datetime.now(timezone.utc)
-        delta = timedelta(minutes=15)
+        delta = timedelta(seconds=self.CHECK_INTERVAL)
         filtered_rss_feed = []
         for feed in all_rss_feeds:
             pub_date = feed.get('published', '')
             if pub_date and ((now - datetime.strptime(pub_date, '%a, %d %b %Y %H:%M:%S %z')) < delta):
                 filtered_rss_feed.append(feed)
+        print(f'📰 Found {len(filtered_rss_feed)} new RSS items')
         return filtered_rss_feed
 
                 

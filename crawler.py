@@ -23,21 +23,20 @@ class Crawler:
             word_count_threshold=10,
         )
             
-    async def scrape(self, urls):
+    async def scrape_many(self, urls):
         try:
             async with AsyncWebCrawler(config=self.browser_conf) as crawler:
                 results = await crawler.arun_many(
                     urls,
                     config=self.run_conf
                 )
-                
-                for result in results:
-                    if result.success and result.markdown:
-                        print('✅ Scraping successful')
-                        return result.markdown.fit_markdown
-                    else:
-                        raise Exception('Scraping failed - no content returned')
-                
+                if len(results) != 0:
+                    fit_markdown = [result.markdown.fit_markdown for result in results]                    
+                    print('✅ Scraping successful')
+                    return fit_markdown
+                else:
+                    raise Exception('Scraping failed - no content returned')
+            
         except Exception as error:
             print(f'❌ Crawl4AI error for {urls}: {error}')
 

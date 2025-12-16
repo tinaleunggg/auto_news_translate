@@ -17,7 +17,6 @@ import traceback
 import asyncio
 import sys
 from datetime import datetime, timezone, timedelta
-# from typing import Dict, List, Optional, Set
 import aiohttp
 import feedparser
 from crawler import Crawler
@@ -52,7 +51,9 @@ class NewsBot:
                 return
             
             urls_to_scrape = [ rss_feed.link for rss_feed in filtered_rss_feeds]
-            markdown_contents = await self.crawler.scrape_many(urls_to_scrape)
+            
+            for url in urls_to_scrape:
+                markdown_contents = await self.crawler.scrape(url)
                 
             #     # use AI to translate the page
             #     # send the result to discord

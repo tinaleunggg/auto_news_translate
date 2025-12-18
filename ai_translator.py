@@ -28,89 +28,73 @@ class AiTranslator:
         備註: 回覆只需以上三點, 不需要說: 好的,作為..現在為你..
         """
         
-    async def process_article(self, content, title):
-        try:
-            print(f'🤖 Processing with Gemini AI: {title[:50]}...')
-            
-            prompt = self.generate_prompt(title, content)
-           
-            payload = {
-                "contents": [{
-                    "parts": [{
-                        "text": prompt
-                    }]
-                }],
-                "generationConfig": {
-                    "maxOutputTokens": 5000,
-                }
-            }
-            headers = {
-                'Content-Type': 'application/json',
-                'x-goog-api-key': self.GEMINI_API_KEY
-            }
-            async with aiohttp.ClientSession() as session:
-                async with session.post(self.API_URL, json=payload, headers=headers) as response:
-                    if response.status != 200:
-                        raise ConnectionError(f'HTTP {response.status}')
-                    
-                    data = await response.json()
-                    
-                    print(data)
-                    
-                    if data.get('candidates') and len(data['candidates']) > 0:
-                        generated_text = data['candidates'][0]['content']['parts'][0]['text']
-                        print('✅ Gemini AI processing successful')
-                        return generated_text
-                    else:
-                        raise ValueError('No response from Gemini API')
-                    
-        except Exception as error:
-            print(f'❌ Gemini AI processing error: {error}')
-            return '無法處理此新聞內容 - Gemini AI 處理失敗'
+    async def process_article(self, content: str, title: str, session: aiohttp.ClientSession) -> str:
+        print(f'🤖 Processing with Gemini AI: {title[:50]}...')
         
-    async def test_generate(self, text):
-        try:
-            print(f'🤖 Testing with Gemini AI: ...')
-            
-            payload = {
-                "contents": [{
-                    "parts": [{
-                        "text": text
-                    }]
-                }],
-                "generationConfig": {
-                    "maxOutputTokens": 100,
-                }
-            }
-            headers = {
-                'Content-Type': 'application/json',
-                'x-goog-api-key': self.GEMINI_API_KEY
-            }
-            
-            async with aiohttp.ClientSession() as session:
-                async with session.post(self.API_URL, json=payload, headers=headers) as response:
-                    if response.status != 200:
-                        raise ConnectionError(f'HTTP {response.status}')
-                    
-                    data = await response.json()
-                    
-                    print(data)
-                    
-                    if data.get('candidates') and len(data['candidates']) > 0:
-                        generated_text = data['candidates'][0]['content']['parts'][0]['text']
-                        print('✅ Gemini AI processing successful')
-                        return generated_text
-                    else:
-                        raise ValueError('No response from Gemini API')
-                    
-        except Exception as error:
-            print(f'❌ Gemini AI processing error: {error}')
-            return '無法處理此新聞內容 - Gemini AI 處理失敗'
+        prompt = self.generate_prompt(title, content)
         
+        payload = {
+            "contents": [{
+                "parts": [{
+                    "text": prompt
+                }]
+            }],
+            "generationConfig": {
+                "maxOutputTokens": 5000,
+            }
+        }
+        headers = {
+            'Content-Type': 'application/json',
+            'x-goog-api-key': self.GEMINI_API_KEY
+        }
+
+        async with session.post(self.API_URL, json=payload, headers=headers) as response:
+            response.raise_for_status()
+            data = await response.json()
+            
+            if data.get('candidates') and len(data['candidates']) > 0:
+                generated_text = data['candidates'][0]['content']['parts'][0]['text']
+                print('✅ Gemini AI processing successful')
+                return generated_text
+            else:
+                raise ValueError('No response from Gemini API')
+            
         
+    async def test_generate(self, text, session: aiohttp.ClientSession) -> str:
+        print(f'Testing with Gemini AI: ...')
+        
+        payload = {
+            "contents": [{
+                "parts": [{
+                    "text": text
+                }]
+            }],
+            "generationConfig": {
+                "maxOutputTokens": 100,
+            }
+        }
+        headers = {
+            'Content-Type': 'application/json',
+            'x-goog-api-key': self.GEMINI_API_KEY
+        }
+
+        async with session.post(self.API_URL, json=payload, headers=headers) as response:
+            response.raise_for_status()
+            data = await response.json()
+            
+            print(data)
+            
+            if data.get('candidates') and len(data['candidates']) > 0:
+                generated_text = data['candidates'][0]['content']['parts'][0]['text']
+                print('✅ Gemini AI processing successful')
+                return generated_text
+            else:
+                raise ValueError('No response from Gemini API')
+
         
 if __name__ == "__main__":
     async def main():
         ai = AiTranslator()
-        await ai.test_generate("Hello, this is testing")
+        with aiohttp.ClientSession() as session:
+            await ai.test_generate("Hello, this is testing", session)
     asyncio.run(main())

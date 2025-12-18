@@ -36,23 +36,18 @@ class Crawler:
         :param url: a url strings
         
         '''
-        try:
-            async with AsyncWebCrawler(config=self.browser_conf) as crawler:
-                result = await crawler.arun(
-                    url,
-                    config=self.run_conf
-                )
-                if not result.success:
-                    raise ValueError('Scraping failed - no content returned')
-                
-                fit_markdown = result.markdown.fit_markdown                    
-                print('✅ Scraping successful')
-                return fit_markdown
+        async with AsyncWebCrawler(config=self.browser_conf) as crawler:
+            result = await crawler.arun(
+                url,
+                config=self.run_conf
+            )
+            if not result.success:
+                raise ValueError('Scraping failed - no content returned')
+            
+            fit_markdown = result.markdown.fit_markdown                    
+            print('✅ Scraping successful')
+            return fit_markdown
 
-        except Exception as error:
-            print(f'❌ Crawl4AI error for {url}: {error}')
-    
-    
     
     async def scrape_many(self, urls):
         '''
@@ -62,25 +57,21 @@ class Crawler:
         :param urls: a list of url strings
         
         '''
-        try:
-            async with AsyncWebCrawler(config=self.browser_conf) as crawler:
-                results = await crawler.arun_many(
-                    urls,
-                    config=self.run_conf
-                )
-                fit_markdowns = []
-                for result in results:
-                    if result.success:
-                        print(f"Just completed: {result.url}")
-                        fit_markdowns.append(result.markdown.fit_markdown)
-                    else:
-                        print("Scraping failed - no content returned") 
-                  
-                print(f'✅ Scraping successful for {len(fit_markdowns)} urls')
-                return fit_markdowns
-            
-        except Exception as error:
-            print(f'❌ Crawl4AI error for {urls}: {error}')
+        async with AsyncWebCrawler(config=self.browser_conf) as crawler:
+            results = await crawler.arun_many(
+                urls,
+                config=self.run_conf
+            )
+            fit_markdowns = []
+            for result in results:
+                if result.success:
+                    print(f"Just completed: {result.url}")
+                    fit_markdowns.append(result.markdown.fit_markdown)
+                else:
+                    print("Scraping failed - no content returned") 
+                
+            print(f'✅ Scraping successful for {len(fit_markdowns)} urls')
+            return fit_markdowns
 
 if __name__ == "__main__":
     async def main():

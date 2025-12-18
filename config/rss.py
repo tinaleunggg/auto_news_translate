@@ -17,7 +17,7 @@ Classes:
 
 import os
 from dotenv import load_dotenv
-from config.rss_feeds import FEEDS
+from config.feeds import FEEDS
 
 load_dotenv()
 
@@ -43,7 +43,7 @@ class Rss:
 class RssLibrary:
     
     def __init__(self):
-        self.library = []
+        self.library: list[Rss] = []
         for feed in FEEDS:
             self.add_rss(feed['name'], feed['url'], feed['channel'])
     

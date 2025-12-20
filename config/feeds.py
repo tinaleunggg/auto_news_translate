@@ -7,29 +7,25 @@ FEEDS contain a list of rss dictionary
 }
 '''
 
-import os
-from dotenv import load_dotenv
-load_dotenv()
-
 FEEDS = [
             {
                 'name': 'Global News Canada',
-                'url': os.getenv('GLOBAL_NEWS_URL'),
+                'url': 'https://globalnews.ca/canada/feed/',
                 'channel': 'canada-news',
             },
             {
                 'name': 'CBC Canada',
-                'url': os.getenv('CBC_NEWS_URL'),
+                'url': 'https://www.cbc.ca/webfeed/rss/rss-canada',
                 'channel': 'canada-news',
             },
             {
                 'name': 'CBC British Columbia',
-                'url': os.getenv('CBC_BC_NEWS_URL'),
+                'url': 'https://www.cbc.ca/webfeed/rss/rss-canada-britishcolumbia',
                 'channel': 'canada-news',
             },
             {
                 'name': 'CBC world news',
-                'url': os.getenv('CBC_WORLD_NEWS_URK'),
+                'url': 'https://www.cbc.ca/webfeed/rss/rss-world',
                 'channel': 'world-news',
             }
         ]

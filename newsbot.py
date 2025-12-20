@@ -1,15 +1,4 @@
-'''
-✅TODO: load config
-TODO: schedule checking for new items every 15 min
-✅TODO: fetch rss content from each links in the library
-    ✅TODO: for each item in the rss list
-        ✅TODO: check release time of the new items, only process the news articles released within 15 mins
-        ✅TODO: format rss news item (title, link, published date, channel, webhook url)
-        ✅TODO: crawl the news article
-        ✅TODO: translate by AI
-        ✅TODO: send to discord
-
-'''
+#!/usr/bin/env python3
 import os
 from dotenv import load_dotenv
 from config.rss import RssLibrary, Rss
@@ -24,7 +13,7 @@ from ai_translator import AiTranslator
 load_dotenv()
 
 class NewsBot:
-    CHECK_INTERVAL = 10000  # 15 mins
+    CHECK_INTERVAL = 3000  # 15 mins
     REQUEST_TIMEOUT = 30
     GEMINI_API_KEY = os.getenv('GEMINI_API_KEY')
     AI_MODEL = 'gemini-2.5-flash'
@@ -40,9 +29,7 @@ class NewsBot:
         self.session = aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=self.REQUEST_TIMEOUT)
         )
         self.is_running = True
-        
-        # run a clock, every 15 min do the cycle
-        # each article is a asynchronous chain
+
         try:
             
             for rss in self.rss_library.library:
@@ -74,7 +61,14 @@ class NewsBot:
         if self.session:
             await self.session.close()
 
-    async def process_article(self, link: str, title: str, pub_date: str,  name: str, channel: str, webhock_url: str) -> None:
+    async def process_article(
+        self, 
+        link: str, 
+        title: str, 
+        pub_date: str,  
+        name: str, 
+        channel: str, 
+        webhock_url: str) -> None:
         '''
         pipeline for processing a single raw article link: scrape markdown content, translation by AI and send to discord   
         
@@ -129,7 +123,29 @@ class NewsBot:
         print(f'📰 Found {len(new_rss_feed)} new RSS items')
         return new_rss_feed
 
-    async def send_to_discord(self, link, title, pub_date, content, name, channel, webhock_url):
+    async def send_to_discord(
+        self, 
+        link:str, 
+        title:str, 
+        pub_date:str, 
+        content:str, 
+        name:str, 
+        channel:str, 
+        webhock_url:str)-> None:
+        '''
+        Send the translated article to the specific channel in discord
+        
+        Args:
+            link: article link
+            title: article title
+            pub_date: published datetime
+            content: translated content
+            name: ariticle source
+            channel: discord channel
+            webhock_url: discord webhook url
+        Return:
+            None
+        '''
         emoji = '🌍' if channel == 'world-news' else '🍁'
         color = 3447003 if channel == 'world-news' else 16711680  # Blue for world, Red for Canada
         

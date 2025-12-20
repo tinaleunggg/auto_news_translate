@@ -4,7 +4,6 @@ Auto News Translate is a Python-based automation system designed specifically fo
 
 The goal is to reduce repetitive monitoring work so journalists can focus on **fact-checking, analysis, and story development**.
 
----
 
 ## Key Features
 
@@ -23,7 +22,6 @@ The goal is to reduce repetitive monitoring work so journalists can focus on **f
 * **Discord Delivery**
   Automatically sends translated summaries and key content to **topic-specific Discord channels** via webhooks.
 
----
 
 ## Project set up
 
@@ -49,7 +47,6 @@ Use systemd service and timer in Linux or other methods to schedule the script t
 
 > ⚠️ Playwright is required for full article extraction and must be installed separately.
 
----
 
 ## Use Cases
 
@@ -57,7 +54,6 @@ Use systemd service and timer in Linux or other methods to schedule the script t
 * Translating foreign-language articles 
 * Private newsroom intelligence channels on Discord
 
----
 
 ## Disclaimer
 This project is for educational purposes only.

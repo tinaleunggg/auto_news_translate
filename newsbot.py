@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 import os
 from dotenv import load_dotenv
 from config.rss import RssLibrary, Rss
@@ -10,6 +9,7 @@ import aiohttp
 import feedparser
 from crawler import Crawler
 from ai_translator import AiTranslator
+from email.utils import parsedate_to_datetime
 load_dotenv()
 
 class NewsBot:
@@ -118,11 +118,20 @@ class NewsBot:
         new_rss_feed = []
         for feed in all_rss_feeds:
             pub_date = feed.get('published', '')
-            if pub_date and ((now - datetime.strptime(pub_date, '%a, %d %b %Y %H:%M:%S %z')) < delta):
+            if pub_date and ((now - self.parse_pub_date(pub_date)) < delta):
                 new_rss_feed.append(feed)
         print(f'📰 Found {len(new_rss_feed)} new RSS items')
         return new_rss_feed
 
+    def parse_pub_date(self, pub_date: str) -> datetime:
+        try:
+            dt = datetime.strptime(pub_date, '%a, %d %b %Y %H:%M:%S %z')
+            return dt
+        except:
+            dt = parsedate_to_datetime(pub_date)
+            return dt
+        
+    
     async def send_to_discord(
         self, 
         link:str, 

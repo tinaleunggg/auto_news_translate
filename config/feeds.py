@@ -28,8 +28,8 @@ FEEDS = [
                 'channel': 'canada-news',
             },
             {
-                'name': 'Reuters',
-                'url': os.getenv('REUTERS_URL'),
+                'name': 'CBC world news',
+                'url': os.getenv('CBC_WORLD_NEWS_URK'),
                 'channel': 'world-news',
             }
         ]

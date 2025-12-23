@@ -1,7 +1,7 @@
 [project]
 name = "auto-news-translate"
 version = "0.1.0"
-description = "Add your description here"
+description = "Automatically fetch rss and translate full article"
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [

@@ -49,7 +49,7 @@ class NewsBot:
             await self.session.close()
             
         except Exception as error:
-            print(error)
+            traceback.print_exc()
             await self.session.close()
             
 

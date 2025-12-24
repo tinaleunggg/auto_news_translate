@@ -19,8 +19,8 @@ The goal is to reduce repetitive monitoring work so journalists can focus on **f
 * **AI-Powered Translation & Summarization**
   Uses the **Gemini API** to summarize articles and translate them into the target language.
 
-* **Discord Delivery**
-  Automatically sends translated summaries and key content to **topic-specific Discord channels** via webhooks.
+* **Asynchronous fetching and processing**
+  Uses asyncio to perform concurrent article fetching, scraping and API requests, improving throughput and reducing overall processing time.
 
 
 ## Project set up

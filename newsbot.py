@@ -31,21 +31,9 @@ class NewsBot:
         self.is_running = True
 
         try:
-            
-            for rss in self.rss_library.library:
-                channel = rss.channel
-                webhock_url = rss.webhook_url
-                all_rss_feeds = await self.fetch_rss(rss)
-                new_rss_feeds = self.filter_updated_rss(all_rss_feeds)
-                if len(new_rss_feeds) == 0:
-                    continue
-                
-                async with asyncio.TaskGroup() as tg:
-                    for rss_feed in new_rss_feeds:
-                        tg.create_task(
-                            self.process_article(rss_feed.link, rss_feed.title, rss_feed.published, rss.name, channel, webhock_url)
-                            )
-
+            async with asyncio.TaskGroup() as tg:
+                for rss in self.rss_library.library:
+                    tg.create_task(self.process_rss(rss))
             await self.session.close()
             
         except Exception as error:
@@ -60,6 +48,20 @@ class NewsBot:
         
         if self.session:
             await self.session.close()
+
+    async def process_rss(self, rss:Rss ):
+        channel = rss.channel
+        webhock_url = rss.webhook_url
+        all_rss_feeds = await self.fetch_rss(rss)
+        new_rss_feeds = self.filter_updated_rss(all_rss_feeds)
+        if len(new_rss_feeds) == 0:
+            return
+        
+        async with asyncio.TaskGroup() as tg:
+            for rss_feed in new_rss_feeds:
+                tg.create_task(
+                    self.process_article(rss_feed.link, rss_feed.title, rss_feed.published, rss.name, channel, webhock_url)
+                    )
 
     async def process_article(
         self, 
@@ -96,7 +98,6 @@ class NewsBot:
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
             'Accept': 'application/rss+xml, application/xml, text/xml, application/atom+xml, */*',
         }
-        print(f'📡 Fetching {rss_link.name}: {rss_link.url}')
         async with self.session.get(rss_link.url, headers=headers) as response:
             response.raise_for_status()
             feed = feedparser.parse(await response.text())

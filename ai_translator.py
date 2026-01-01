@@ -58,43 +58,11 @@ class AiTranslator:
                 return generated_text
             else:
                 raise ValueError('No response from Gemini API')
-            
         
-    async def test_generate(self, text, session: aiohttp.ClientSession) -> str:
-        print(f'Testing with Gemini AI: ...')
-        
-        payload = {
-            "contents": [{
-                "parts": [{
-                    "text": text
-                }]
-            }],
-            "generationConfig": {
-                "maxOutputTokens": 100,
-            }
-        }
-        headers = {
-            'Content-Type': 'application/json',
-            'x-goog-api-key': self.GEMINI_API_KEY
-        }
-
-        async with session.post(self.API_URL, json=payload, headers=headers) as response:
-            response.raise_for_status()
-            data = await response.json()
-            
-            print(data)
-            
-            if data.get('candidates') and len(data['candidates']) > 0:
-                generated_text = data['candidates'][0]['content']['parts'][0]['text']
-                print('✅ Gemini AI processing successful')
-                return generated_text
-            else:
-                raise ValueError('No response from Gemini API')
-
         
 if __name__ == "__main__":
     async def main():
         ai = AiTranslator()
         with aiohttp.ClientSession() as session:
-            await ai.test_generate("Hello, this is testing", session)
+            await ai.process_article("testing title", "testing content", session)
     asyncio.run(main())

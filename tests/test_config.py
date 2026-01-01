@@ -1,16 +1,23 @@
 import pytest
-from config.rss_settings import Rss, RssLibrary
+from config.rss import Rss, RssLibrary
 import os
 from dotenv import load_dotenv
+from config.feeds import FEEDS
 
 @pytest.fixture
 def env_var(scope = "module"):
     load_dotenv()
-    
+
+def test_feed():
+    assert type(FEEDS) == list
+    for item in FEEDS:
+        assert item['name']
+        assert item['url']
+        assert item['channel']
 
 def test_rss():
-    cbc = Rss("cbc", "http://testing", "world-news")
-    assert cbc.name == "cbc"
+    cbc = Rss("test", "http://testing", "world-news")
+    assert cbc.name == "test"
     assert cbc.url == "http://testing"
     assert cbc.channel == "world-news"
     assert cbc.webhook_url == os.getenv('WORLD_NEWS_WEBHOOK_URL')

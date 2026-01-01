@@ -70,7 +70,7 @@ class Crawler:
                 else:
                     print("Scraping failed - no content returned") 
                 
-            print(f'✅ Scraping successful for {len(fit_markdowns)} urls')
+            # print(f'✅ Scraping successful for {len(fit_markdowns)} urls')
             return fit_markdowns
 
 if __name__ == "__main__":

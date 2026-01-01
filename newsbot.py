@@ -39,20 +39,25 @@ class NewsBot:
         except Exception as error:
             traceback.print_exc()
             await self.session.close()
-            
-
         
     async def stop(self):
         print('🛑 Stopping Multi-Feed News Bot...')
-        self.is_running = False
-        
-        if self.session:
+        if self.is_running or self.session:
+            self.is_running = False
             await self.session.close()
 
     async def process_rss(self, rss:Rss ):
+        '''
+        pipeline for processing a Rss feed, fetch the rss content, filter updated articles, and start task group for processing each article   
+        
+        Args:
+            rss: Rss object
+        Return:
+            True if successful
+        '''
         channel = rss.channel
         webhock_url = rss.webhook_url
-        all_rss_feeds = await self.fetch_rss(rss)
+        all_rss_feeds = await self.fetch_rss(rss, self.session)
         new_rss_feeds = self.filter_updated_rss(all_rss_feeds)
         if len(new_rss_feeds) == 0:
             return
@@ -78,15 +83,15 @@ class NewsBot:
             link: article url
             title: article title
         Return:
-            None
+            True if successful
         '''
         markdown_contents = await self.crawler.scrape(link)
         translated_article = await self.translator.process_article(markdown_contents, title, self.session)
-        await self.send_to_discord(link, title, pub_date, translated_article, name, channel, webhock_url)
+        await self.send_to_discord(link, title, pub_date, translated_article, name, channel, webhock_url, self.session)
             
             
         
-    async def fetch_rss(self, rss_link: Rss) -> list[dict]:
+    async def fetch_rss(self, rss_link: Rss, session: aiohttp.ClientSession) -> list[dict]:
         ''' 
         Fetch rss content from a rss object using feedparser, return a list of dictionary, each distionary represent a rss feed 
         Args:
@@ -98,7 +103,7 @@ class NewsBot:
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
             'Accept': 'application/rss+xml, application/xml, text/xml, application/atom+xml, */*',
         }
-        async with self.session.get(rss_link.url, headers=headers) as response:
+        async with session.get(rss_link.url, headers=headers) as response:
             response.raise_for_status()
             feed = feedparser.parse(await response.text())
             all_rss_feeds = feed.entries
@@ -141,7 +146,8 @@ class NewsBot:
         content:str, 
         name:str, 
         channel:str, 
-        webhock_url:str)-> None:
+        webhock_url:str,
+        session: aiohttp.ClientSession)-> None:
         '''
         Send the translated article to the specific channel in discord
         
@@ -188,8 +194,9 @@ class NewsBot:
                 }]
             }
             
-        async with self.session.post(webhock_url, json=body) as response:
+        async with session.post(webhock_url, json=body) as response:
             response.raise_for_status()
+            return response
 
 if __name__ == "__main__":    
     async def main():

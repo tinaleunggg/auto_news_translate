@@ -1,26 +1,30 @@
 import pytest
 from newsbot import NewsBot
 from config.rss import Rss, RssLibrary
+from ai_translator import AiTranslator
+from test_ai_translaator import response_body
 import aiohttp
 import datetime
 from aioresponses import aioresponses
-
-@pytest.fixture(scope = "module")
-def newsbot():
-    newsbot = NewsBot()
-    new_library = RssLibrary()
-    new_library.library = [Rss("test", "https://lorem-rss.herokuapp.com/feed", "test")]
-    newsbot.rss_library = new_library
-    return newsbot
+import json
+from email.utils import format_datetime
 
 @pytest.fixture(scope = "module")
 def rss():
     return Rss("test", "https://lorem-rss.herokuapp.com/feed", "test")
 
+@pytest.fixture(scope = "module")
+def newsbot(rss):
+    newsbot = NewsBot()
+    new_library = RssLibrary()
+    new_library.library = [rss]
+    newsbot.rss_library = new_library
+    return newsbot
+
 @pytest.fixture
 def mock_aioresponse():
-    with aioresponses() as m:
-        yield m
+    with aioresponses() as mock:
+        yield mock
 
 @pytest.mark.asyncio
 async def test_fetch_rss(newsbot, rss):
@@ -52,9 +56,39 @@ async def test_fail_send_to_discord(newsbot, rss, mock_aioresponse):
             await newsbot.send_to_discord(rss.url, "test title", "test pub date", "test content", "test", "test channel", "https://testing", session)
          
 @pytest.mark.asyncio
-async def test_process_article(newsbot, rss):
-    pass       
+async def test_process_article(newsbot, rss, mock_aioresponse):
+    mock_aioresponse.post(AiTranslator.API_URL, status=200, payload=json.loads(response_body))
+    mock_aioresponse.post(rss.webhook_url, status=204)
+    async with aiohttp.ClientSession() as session:
+        assert await newsbot.process_article(rss.url, "test title", "test pub date", "test", "test channel", rss.webhook_url, session) == True
             
 @pytest.mark.asyncio
-async def test_process_rss(newsbot, rss):
-    pass
+async def test_process_rss(newsbot, rss, mock_aioresponse):
+    mock_aioresponse.get(
+        rss.url,
+        status=200,
+        body=mock_rss_xml,
+        headers={"Content-Type": "application/rss+xml"},
+    )
+    mock_aioresponse.post(AiTranslator.API_URL, status=200, payload=json.loads(response_body))
+    mock_aioresponse.post(rss.webhook_url, status=204)
+    async with aiohttp.ClientSession() as session:
+        assert await newsbot.process_rss(rss, session) == True
+
+now = datetime.datetime.now()
+pub_date = format_datetime(now)
+mock_rss_xml = f"""<?xml version="1.0" encoding="UTF-8"?>
+    <rss version="2.0">
+    <channel>
+        <title>Mock RSS Feed</title>
+        <link>https://www.example.com/</link>
+        <description>This is a mock RSS feed for testing.</description>
+        <item>
+        <title>Test Article 1</title>
+        <link>https://www.example.com/article1</link>
+        <description>This is a short description for article 1.</description>
+        <pubDate>{pub_date}</pubDate>
+        <guid>https://www.example.com/article1</guid>
+        </item>
+    </channel>
+    </rss>"""

@@ -1,5 +1,4 @@
 from crawler import Crawler
-from tests.test_article import content
 import pytest
 from unittest.mock import patch, AsyncMock, MagicMock
 from crawl4ai import CrawlResult, MarkdownGenerationResult

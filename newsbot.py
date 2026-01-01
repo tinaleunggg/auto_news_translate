@@ -33,7 +33,7 @@ class NewsBot:
         try:
             async with asyncio.TaskGroup() as tg:
                 for rss in self.rss_library.library:
-                    tg.create_task(self.process_rss(rss))
+                    tg.create_task(self.process_rss(rss, self.session))
             await self.session.close()
             
         except Exception as error:
@@ -46,7 +46,7 @@ class NewsBot:
             self.is_running = False
             await self.session.close()
 
-    async def process_rss(self, rss:Rss ):
+    async def process_rss(self, rss:Rss, session:aiohttp.ClientSession ):
         '''
         pipeline for processing a Rss feed, fetch the rss content, filter updated articles, and start task group for processing each article   
         
@@ -57,16 +57,17 @@ class NewsBot:
         '''
         channel = rss.channel
         webhock_url = rss.webhook_url
-        all_rss_feeds = await self.fetch_rss(rss, self.session)
+        all_rss_feeds = await self.fetch_rss(rss, session)
         new_rss_feeds = self.filter_updated_rss(all_rss_feeds)
         if len(new_rss_feeds) == 0:
-            return
+            return True
         
         async with asyncio.TaskGroup() as tg:
             for rss_feed in new_rss_feeds:
                 tg.create_task(
-                    self.process_article(rss_feed.link, rss_feed.title, rss_feed.published, rss.name, channel, webhock_url)
+                    self.process_article(rss_feed.link, rss_feed.title, rss_feed.published, rss.name, channel, webhock_url, session)
                     )
+        return True
 
     async def process_article(
         self, 
@@ -75,7 +76,8 @@ class NewsBot:
         pub_date: str,  
         name: str, 
         channel: str, 
-        webhock_url: str) -> None:
+        webhock_url: str,
+        session: aiohttp.ClientSession) -> None:
         '''
         pipeline for processing a single raw article link: scrape markdown content, translation by AI and send to discord   
         
@@ -86,9 +88,9 @@ class NewsBot:
             True if successful
         '''
         markdown_contents = await self.crawler.scrape(link)
-        translated_article = await self.translator.process_article(markdown_contents, title, self.session)
-        await self.send_to_discord(link, title, pub_date, translated_article, name, channel, webhock_url, self.session)
-            
+        translated_article = await self.translator.process_article(markdown_contents, title, session)
+        await self.send_to_discord(link, title, pub_date, translated_article, name, channel, webhock_url, session)
+        return True
             
         
     async def fetch_rss(self, rss_link: Rss, session: aiohttp.ClientSession) -> list[dict]:

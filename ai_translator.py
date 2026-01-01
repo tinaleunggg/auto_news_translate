@@ -58,11 +58,3 @@ class AiTranslator:
                 return generated_text
             else:
                 raise ValueError('No response from Gemini API')
-        
-        
-if __name__ == "__main__":
-    async def main():
-        ai = AiTranslator()
-        with aiohttp.ClientSession() as session:
-            await ai.process_article("testing title", "testing content", session)
-    asyncio.run(main())

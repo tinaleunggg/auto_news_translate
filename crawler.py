@@ -72,13 +72,3 @@ class Crawler:
                 
             # print(f'✅ Scraping successful for {len(fit_markdowns)} urls')
             return fit_markdowns
-
-if __name__ == "__main__":
-    async def main():
-        crawler = Crawler()
-        result = await crawler.scrape("https://www.geeksforgeeks.org/python/python-features/")
-        with open("fit_markdown_geeksforgeeks.txt.", "w", encoding='utf-8') as f:
-            f.write(str(result))        
-        
-    asyncio.run(main())
-        

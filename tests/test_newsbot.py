@@ -2,7 +2,7 @@ import pytest
 from newsbot import NewsBot
 from config.rss import Rss, RssLibrary
 from ai_translator import AiTranslator
-from test_ai_translaator import response_body
+from tests.test_ai_translator import response_body
 import aiohttp
 import datetime
 from aioresponses import aioresponses
@@ -11,7 +11,7 @@ from email.utils import format_datetime
 
 @pytest.fixture(scope = "module")
 def rss():
-    return Rss("test", "https://lorem-rss.herokuapp.com/feed", "test")
+    return Rss("test", "https://test_rss", "test")
 
 @pytest.fixture(scope = "module")
 def newsbot(rss):
@@ -27,7 +27,13 @@ def mock_aioresponse():
         yield mock
 
 @pytest.mark.asyncio
-async def test_fetch_rss(newsbot, rss):
+async def test_fetch_rss(newsbot, rss, mock_aioresponse):
+    mock_aioresponse.get(
+        rss.url,
+        status=200,
+        body=mock_rss_xml,
+        headers={"Content-Type": "application/rss+xml"},
+    )
     async with aiohttp.ClientSession() as session:
         response = await newsbot.fetch_rss(rss, session)
         assert type(response) == list
@@ -37,7 +43,13 @@ def test_parse_pubdate(newsbot):
     assert isinstance(newsbot.parse_pub_date("Wed, 31 Dec 2025 22:12:05 +0000"), datetime.datetime)
 
 @pytest.mark.asyncio
-async def test_filter_rss(newsbot, rss):
+async def test_filter_rss(newsbot, rss, mock_aioresponse):
+    mock_aioresponse.get(
+        rss.url,
+        status=200,
+        body=mock_rss_xml,
+        headers={"Content-Type": "application/rss+xml"},
+    )
     async with aiohttp.ClientSession() as session:
         response = await newsbot.fetch_rss(rss, session)
         assert type(newsbot.filter_updated_rss(response)) == list
@@ -57,6 +69,7 @@ async def test_fail_send_to_discord(newsbot, rss, mock_aioresponse):
          
 @pytest.mark.asyncio
 async def test_process_article(newsbot, rss, mock_aioresponse):
+    # need to add mock crawler, now crawl4ai is running
     mock_aioresponse.post(AiTranslator.API_URL, status=200, payload=json.loads(response_body))
     mock_aioresponse.post(rss.webhook_url, status=204)
     async with aiohttp.ClientSession() as session:

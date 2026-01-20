@@ -37,7 +37,6 @@ def mock_result1():
 @pytest.mark.asyncio
 async def test_scrape_many(crawler, mock_crawler, mock_result, mock_result1):
     mock_crawler.arun_many.return_value = [mock_result, mock_result1]
-    
     results = await crawler.scrape_many(["http://testing", "http://testing"])
     assert isinstance(results, list)
     assert "test result" in results[0]

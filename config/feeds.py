@@ -14,18 +14,8 @@ FEEDS = [
                 'channel': 'canada-news',
             },
             {
-                'name': 'CBC Canada',
-                'url': 'https://www.cbc.ca/webfeed/rss/rss-canada',
-                'channel': 'canada-news',
-            },
-            {
-                'name': 'CBC British Columbia',
-                'url': 'https://www.cbc.ca/webfeed/rss/rss-canada-britishcolumbia',
-                'channel': 'canada-news',
-            },
-            {
-                'name': 'CBC world news',
-                'url': 'https://www.cbc.ca/webfeed/rss/rss-world',
+                'name': 'Global News World',
+                'url': 'https://globalnews.ca/world/feed/',
                 'channel': 'world-news',
             }
         ]

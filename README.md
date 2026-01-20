@@ -7,19 +7,19 @@ The goal is to reduce repetitive monitoring work so journalists can focus on **f
 
 ## Key Features
 
-* **Automated RSS Monitoring**
+* **Automated RSS Monitoring**:
   Parses RSS feeds to detect newly published articles.
 
-* **Full Article Extraction**
+* **Full Article Extraction**:
   Uses a web crawling tool to fetch complete article content instead of partial RSS snippets.
 
-* **Token-Efficient Content Processing**
+* **Token-Efficient Content Processing**:
   Extracts only relevant information (title, source, publish date, main content) and converts it into **Markdown format**, minimizing token usage for LLM processing.
 
-* **AI-Powered Translation & Summarization**
+* **AI-Powered Translation & Summarization**:
   Uses the **Gemini API** to summarize articles and translate them into the target language.
 
-* **Asynchronous fetching and processing**
+* **Asynchronous fetching and processing**:
   Uses asyncio to perform concurrent article fetching, scraping and API requests, improving throughput and reducing overall processing time.
 
 

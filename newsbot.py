@@ -41,11 +41,10 @@ class NewsBot:
             await self.session.close()
         
     async def stop(self):
-        print('🛑 Stopping Multi-Feed News Bot...')
         if self.is_running or self.session:
             self.is_running = False
             await self.session.close()
-
+        print(f'🛑 Stopped Multi-Feed News Bot at {datetime.now()}')
     async def process_rss(self, rss:Rss, session:aiohttp.ClientSession ):
         '''
         pipeline for processing a Rss feed, fetch the rss content, filter updated articles, and start task group for processing each article   

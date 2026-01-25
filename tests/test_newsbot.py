@@ -8,6 +8,8 @@ import datetime
 from aioresponses import aioresponses
 import json
 from email.utils import format_datetime
+from unittest.mock import patch, AsyncMock, MagicMock
+
 
 @pytest.fixture(scope = "module")
 def rss():
@@ -25,6 +27,26 @@ def newsbot(rss):
 def mock_aioresponse():
     with aioresponses() as mock:
         yield mock
+        
+@pytest.fixture
+def mock_crawler():
+    # patch the crawler.AsyncWebCrawler, whenever you call this object, it will be replaced by the mock object
+    # context manager to provide a scope you want to apply the mock
+    with patch("crawler.AsyncWebCrawler", autospec=True) as MockCrawler:
+        crawler_instance = MockCrawler.return_value.__aenter__.return_value
+        crawler_instance.arun = AsyncMock()
+        crawler_instance.arun_many = AsyncMock()
+        yield crawler_instance
+
+@pytest.fixture
+def mock_result():
+    # MagicMock() mock a dictionary, or other container object
+    result = MagicMock()
+    result.success = True
+    markdown = MagicMock()
+    markdown.fit_markdown = "test result"
+    result.markdown = markdown
+    return result
 
 @pytest.mark.asyncio
 async def test_fetch_rss(newsbot, rss, mock_aioresponse):
@@ -68,13 +90,13 @@ async def test_fail_send_to_discord(newsbot, rss, mock_aioresponse):
             await newsbot.send_to_discord(rss.url, "test title", "test pub date", "test content", "test", "test channel", "https://testing", session)
          
 @pytest.mark.asyncio
-async def test_process_article(newsbot, rss, mock_aioresponse):
-    # need to add mock crawler, now crawl4ai is running
+async def test_process_article(newsbot, rss, mock_aioresponse, mock_crawler, mock_result):
+    mock_crawler.arun.return_value = mock_result
     mock_aioresponse.post(AiTranslator.API_URL, status=200, payload=json.loads(response_body))
     mock_aioresponse.post(rss.webhook_url, status=204)
     async with aiohttp.ClientSession() as session:
         assert await newsbot.process_article(rss.url, "test title", "test pub date", "test", "test channel", rss.webhook_url, session) == True
-            
+
 @pytest.mark.asyncio
 async def test_process_rss(newsbot, rss, mock_aioresponse):
     mock_aioresponse.get(
